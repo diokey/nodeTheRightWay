@@ -11,10 +11,10 @@ subscriber.subscribe('');
 
 subscriber.on('message', function (data) {
   let 
-    message = JSON.parse(data);
-    date = new Date(message.timestamp);
+    message = JSON.parse(data),
+    date = new Date(message.timeStamp);
 
-    console.log('File '+message.file+' changed at '+data);
+    console.log('File '+message.file+' changed at '+date);
 });
 
-subscriber.connect('tpc://localhost:5432');
+subscriber.connect('tcp://localhost:5432');

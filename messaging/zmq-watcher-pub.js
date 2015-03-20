@@ -8,8 +8,12 @@ const
   publisher = zmq.socket('pub'),
   filename = process.argv[2];
 
+if (!filename) {
+  throw Error('A file name was not provided');
+}
+
 fs.watch(filename, function () {
-  publisher.send(JSON.stringfy({
+  publisher.send(JSON.stringify({
     type : 'changed',
     file : filename,
     timeStamp : Date.now()
@@ -17,6 +21,6 @@ fs.watch(filename, function () {
 });
 
 //listen on TCP port 5432
-publisher.bind('tpc://*:5432', function(){
+publisher.bind('tcp://*:5432', function(){
   console.log('Listening for zmq subscribers on port 5432');
 });
