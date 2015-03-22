@@ -7,6 +7,10 @@ const
   //create a request end point
   requester = zmq.socket('req');
 
+  if (!filename) {
+    throw Error('Please specify a file');
+  }
+
   //parse incoming response
   requester.on("message", function(data) {
     let response = JSON.parse(data);
