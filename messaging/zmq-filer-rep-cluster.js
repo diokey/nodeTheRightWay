@@ -53,4 +53,9 @@ if (cluster.isMaster) {
       }));
     });
   });
+  // close the responder when the Node process ends
+  process.on('SIGINT', function() {
+    console.log('Shutting down...');
+    responder.close();
+  });
 }
