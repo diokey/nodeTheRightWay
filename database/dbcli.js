@@ -7,7 +7,7 @@ const
   options = {
     method : process.argv[2],
     auth : {
-    user : 'diokey',
+    user : 'admin',
     pass : 'diokey',
     sendImmediately : false
     },
