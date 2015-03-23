@@ -1,4 +1,6 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env iojs
+
+"use strict"
 
 const 
   request = require('request'),
@@ -16,7 +18,7 @@ request(options, function (err, res, body) {
   if (err) {
     throw Error(err);
   } else {
-    var response = JSON.parse(body);
+    let response = JSON.parse(body);
     console.log(res.statusCode, response);
   }
 });
