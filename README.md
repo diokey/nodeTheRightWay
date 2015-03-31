@@ -7,3 +7,4 @@ This repo contains code from the book "Node.js the Right way" by Jim R. Wilson
 **  Chap 3 : Networking 
 **  Chap 4 : Messaging
 **  Chap 5 : Database (couchdb)
+**  Chap 6 : Webservices
