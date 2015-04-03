@@ -30,4 +30,22 @@ module.exports = function(config, app) {
     });
 
   });
+
+  app.get('/api/bundle/:id', function(req, res){
+    let params = {
+      method : 'GET',
+      url : config.b4db + '/' + req.params.id,
+      auth : config.credentials,
+    };
+
+    Q.nfcall(request, params)
+    .then(function (args) {
+      let couchRes = args[0],
+        body = JSON.parse(args[1]);
+      console.log(body);
+      res.status(couchRes.statusCode).json(body);
+    }, function (err) {
+      res.status(502).json({error : 'bad_gateway', reason : err.code});
+    }).done();
+  });
 };
