@@ -66,18 +66,22 @@ module.exports = function(config, app) {
 
       bundle.name = req.params.name;
 
+      console.log('bundle');
+      console.log(bundle);
+
       params.method = 'PUT';
       params.json = bundle;
-      return Q.nfcall(request, params) 
-      .then(function (args) {
-        let couchRes = args[0],
-          body = args[1];
-      })
-      .catch(function(err) {
-        res.json(502, {error : "bad_gateway", reason : err.code});
-      })
-      .done();
-    });
+      return Q.nfcall(request, params);
+    })
+    .then(function (args) {
+      let couchRes = args[0],
+        body = args[1];
+        res.status(couchRes.statusCode).json(body);
+    })
+    .catch(function(err) {
+      res.status(502).json({error : "bad_gateway", reason : err.code});
+    })
+    .done();
     
   });
 };
