@@ -58,7 +58,7 @@ module.exports = function(config, app) {
     Q.nfcall(request, params)
     .then(function (args) {
       let couchRes = args[0],
-      bundle = args[1];
+      bundle = JSON.parse(args[1]);
 
       if (couchRes.statusCode !== 200) {
         return [couchRes, bundle];
@@ -66,8 +66,8 @@ module.exports = function(config, app) {
 
       bundle.name = req.params.name;
 
-      console.log('bundle');
-      console.log(bundle);
+      console.log('called');
+      console.log(req.params.name);
 
       params.method = 'PUT';
       params.json = bundle;
