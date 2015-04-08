@@ -52,7 +52,7 @@ module.exports = function(config, app) {
     let params = {
       method : 'GET',
       url : config.b4db + '/' + req.params.id,
-      auth : config.credentials,
+      auth : config.credentials
     };
 
     Q.nfcall(request, params)
@@ -65,9 +65,6 @@ module.exports = function(config, app) {
       }
 
       bundle.name = req.params.name;
-
-      console.log('called');
-      console.log(req.params.name);
 
       params.method = 'PUT';
       params.json = bundle;
@@ -83,5 +80,58 @@ module.exports = function(config, app) {
     })
     .done();
     
+  });
+
+  app.put('/api/bundle/:id/book/:pgid', function (req, res) {
+    let 
+      requestP = Q.denodeify(request),
+      params = {
+        method : 'GET',
+        auth : config.credentials
+      };
+
+      Q.async(function* () {
+      let args, couchRes, bundle, book;
+
+      //grab the bundle form the b4 database
+      params.url = config.b4db + '/' + req.params.id;
+      args = yield requestP(params);
+      couchRes = args[0];
+      bundle = JSON.parse(args[1]);
+
+      //fail fast if we couldn't get the bundle 
+      if (couchRes.statusCode !== 200) {
+        res.status(couchRes.statusCode).json(bundle);
+        return;
+      }
+
+      //look up the book by its id 
+      params.url = config.bookdb + '/' + req.params.pgid;
+      args = yield requestP(params);
+      couchRes = args[0];
+      book = JSON.parse(args[1]);
+
+      //fail fast if we couldn't get the book
+      if (couchRes.statusCode !== 200) {
+        res.json(couchRes.statusCode, book);
+      }
+
+      //add the book to the bundle and send it back to the db 
+      
+      bundle.books[book._id] = book.title;
+
+      params.method = 'PUT';
+      params.url = config.b4db + '/' + bundle._id;
+      params.json = bundle;
+      args = yield requestP(params);
+
+      couchRes = args[0];
+      bundle = args[1];
+
+      res.status(couchRes.statusCode).json(bundle);
+    })()
+    .catch(function (err) {
+      res.status(502).json({error : "bad_gateway", reason : err.code}); 
+    });
   });
 };
