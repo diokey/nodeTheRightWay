@@ -8,7 +8,24 @@ const
   redisClient = require('redis').createClient(),
   RedisStore = require('connect-redis')(session),
   passport = require('passport'),
-  GoogleStrategy = require('passport-google').Strategy
+  GoogleStrategy = require('passport-google').Strategy,
+  log = require('npmlog'),
+
+  authed = function (req, res, next) {
+    if (req.isAuthenticated()) {
+      return next();
+    } else if (redisClient.ready) {
+      res.status(403).json({
+        error : 'forbidden',
+        reason : 'not_authenticated'
+      }); 
+    } else {
+      res.status(503).json({
+        error : 'service_unavailable',
+        reason : 'authentication_unavailable'
+      });
+    }
+  }
   ;
 
   app.use(cookieParser());
@@ -47,6 +64,14 @@ app.get('/auth/logout', function(req, res) {
   req.logout();
   res.redirect('/');
 });
+
+redisClient
+  .on('ready', function () {
+    log.info('REDIS', 'ready');
+  })
+  .on('error', function (err) {
+    log.error('REDIS', err.message);
+  });
 
 app.use(express.static(__dirname + '/static'));
 app.use(express.static(__dirname +'/bower_components'));
