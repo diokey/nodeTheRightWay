@@ -2,6 +2,7 @@
 
 const 
   express = require('express'),
+  bodyParser = require('body-parser'),
   cookieParser = require('cookie-parser'),
   session = require('express-session'),
   app = express(),
@@ -10,6 +11,15 @@ const
   passport = require('passport'),
   GoogleStrategy = require('passport-google').Strategy,
   log = require('npmlog'),
+  request = require('request'),
+  config = {
+    bookdb : 'http://localhost:5984/books/',
+    b4db : 'http://localhost:5984/b4/',
+    credentials : {
+        user : 'admin',
+        pass : 'diokey'
+    }
+  },
 
   authed = function (req, res, next) {
     if (req.isAuthenticated()) {
@@ -63,6 +73,28 @@ app.get('/auth/google/:return?', passport.authenticate('google', {successRedirec
 app.get('/auth/logout', function(req, res) {
   req.logout();
   res.redirect('/');
+});
+
+app.get('/api/user', authed, function (req, res) {
+  res.json(req.user);
+});
+
+app.get('/api/user/bundles', [authed, bodyParser.json()], function (req, res) {
+  let userURL = config.b4db + encodeURIComponent(req.user.identifier);
+  request(userURL, function (err, couchRes, body) {
+    if (err) {
+      res.status(502).json({error : 'bad_gateway', reason : err.code});
+    } else if (couchRes.statusCode === 200) {
+      let user = JSON.parse(body);
+      user.bundles = req.body;
+      request.put({url : userURL, json : user}).pipe(res);
+    } else if (couchRes.statusCode === 404) {
+      let user = {bundles : req.body};
+      request.put({url : userURL, json : user}).pipe(res);
+    } else {
+      res.status(couchRes.statusCode).send(body);
+    }
+  });
 });
 
 redisClient
